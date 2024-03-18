@@ -15,4 +15,4 @@ pip install selenium
 ```
 
 ## Author
-**Krittaprot Tangkittikun**
+Krittaprot Tangkittikun
