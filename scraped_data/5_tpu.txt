@@ -1,0 +1,65 @@
+TPUs in Keras
+  Once you have flipped the "Accelerator" switch in your notebook to "TPU v3-8", this is how to enable TPU training in Tensorflow Keras:
+  TPUs are network-connected accelerators and you must first locate them on the network. This is what <code>TPUClusterResolver.connect()</code> does.
+  You then instantiate a <code>TPUStrategy</code>. This object contains the necessary distributed training code that will work on TPUs with their 8 compute cores (see hardware section below (#tpuhardware) ).
+  Finally, you use the <code>TPUStrategy</code> by instantiating your model in the scope of the strategy. This creates the model on the TPU. Model size is constrained by the TPU RAM only, not by the amount of memory available on the VM running your Python code. Model creation and model training use the usual Keras APIs.
+
+
+Batch size, learning rate, steps_per_execution
+  To go fast on a TPU, increase the batch size. The rule of thumb is to use batches of 128 elements per core (ex: batch size of 128*8=1024 for a TPU with 8 cores). At this size, the 128x128 hardware matrix multipliers of the TPU (see hardware section below (#tpuhardware) ) are most likely to be kept busy. You start seeing interesting speedups from a batch size of 8 per core though. In the sample above, the batch size is scaled with the core count through this line of code:
+  With a TPUStrategy running on a single TPU v3-8, the core count is 8. This is the hardware available on Kaggle. It could be more on larger configurations called TPU pods available on Google Cloud.
+  With larger batch sizes, TPUs will be crunching through the training data faster. This is only useful if the larger training batches produce more “training work” and get your model to the desired accuracy faster. That is why the rule of thumb also calls for increasing the learning rate with the batch size. You can start with a proportional increase but additional tuning may be necessary to find the optimal learning rate schedule for a given model and accelerator.
+  Starting with Tensorflow 2.4, model.compile() accepts a new <code>steps_per_execution</code> parameter. This parameter instructs Keras to send multiple batches to the TPU at once. In addition to lowering communications overheads, this gives the XLA compiler the opportunity to optimize TPU hardware utilization across multiple batches. With this option, it is no longer necessary to push batch sizes to very high values to optimize TPU performance. As long as you use batch sizes of at least 8 per core (>=64 for a TPUv3-8) performance should be acceptable. Example:
+
+
+tf.data.Dataset and TFRecords
+  Because TPUs are very fast, many models ported to TPU end up with a data bottleneck. The TPU is sitting idle, waiting for data for the most part of each training epoch. TPUs read training data exclusively from GCS (Google Cloud Storage). And GCS can sustain a pretty large throughput if it is continuously streaming from multiple files in parallel. Following a couple of best practices will optimize the throughput:
+  With too few files, GCS will not have enough streams to get max throughput. With too many files, time will be wasted accessing each individual file.
+  Data for TPU training typically comes sharded across the appropriate number of larger files. The usual container format is TFRecords. You can load a dataset from TFRecords files by writing:
+  To enable parallel streaming from multiple TFRecord files, modify the code like this:
+  There are two settings here:
+  
+  Some details have been omitted from these code snippets so check the sample for the full data pipeline code. In Keras and TensorFlow 2.1, it is also possible to send training data to TPUs as numpy arrays in memory. This works but is not the most efficient way, although for datasets that fit in memory, it can be OK.
+
+
+Private Datasets with TPUs
+  TPUs work with both public Kaggle Datasets as well as private Kaggle Datasets. The only difference is that if you want to use a private Kaggle Dataset then you need to: (1) enable “Google Cloud SDK” in the “Add-ons” menu of the notebook editor; (2) Initialize the TPU and then run the “Google Cloud SDK credentials” code snippet; finally (3) take note of the Google Cloud Storage path that is returned.
+  
+
+
+TPU hardware
+  At approximately 20 inches (50 cm), a TPU v3-8 board is a fairly sizeable piece of hardware. It sports 4 dual-core TPU chips for a total of 8 TPU cores.
+  Each TPU core has a traditional vector processing part (VPU) as well as dedicated matrix multiplication hardware capable of processing 128x128 matrices. This is the part that specifically accelerates machine learning workloads.
+  TPUs are equipped with 128GB of high-speed memory allowing larger batches, larger models and also larger training inputs. In the sample above, you can try using 512x512 px input images, also provided in the dataset, and see the TPU v3-8 handle them easily.
+
+
+TPU monitor
+  <img alt="TPU monitor" src="https://storage.googleapis.com/kaggle-media/tpu/tpu_monitor.png" style="padding: 0 15px; float: left;" width="220pt"/> When you are runnig a TPU workload on Kaggle, a performance monitor appears when you click on the TPU gauge. <br/> <br/> The MXU percentage indicates how efficiently the TPU compute hardware is utilized. Higher is better. <br/> <br/> The "Idle Time" percentage measures how often the TPU is sitting idle waiting for data. You should optimize you data pipeline to make this as low as possible. <br/> <br/> The measurements are refreshed approximately every 10 seconds and only appear when the TPU is running a computation.
+
+
+Model saving/loading on TPUs
+  When loading and saving models TPU models from/to the local disk, the experimental_io_device option must be used. The technical explanation is at the end of this section. It can be omitted if writing to GCS because TPUs have direct access to GCS. This option does nothing on GPUs.
+  Example in this EfficientNetB7 Notebook (https://www.kaggle.com/mgornergoogle/efficientnetb7-on-100-flowers#Model) .
+  To understand what the experimental_io_device='/job:localhost' flag does, some background info is needed first. TPU users will remember that in order to train a model on TPU, you have to instantiate the model in a TPUStrategy scope. Like this:
+  This boilerplate code actually does 2 things:
+  The strategy scope instructs Tensorflow to instantiate all the variables of the model in the memory of the TPU. The TPUClusterResolver.connect() call automatically enters the TPU device scope which instructs Tensorflow to run Tensorflow operations on the TPU. Now if you call model.save('./model') when you are connected to a TPU, Tensorflow will try to run the save operations on the TPU and since the TPU is a network-connected accelerator that has no access to your local disk, the operation will fail. Notice that saving to GCS will work though. The TPU does have access to GCS.
+  If you want to save a TPU model to your local disk, you need to run the saving operation on your local machine and that is what the experimental_io_device='/job:localhost' flag does.
+
+
+TPUs in Code Competitions
+  Due to technical limitations for certain kinds of code-only competitions we aren’t able to support notebook submissions that run on TPUs, made clear in the competition's rules. But that doesn’t mean you can’t use TPUs to train your models! <br/> <br/> A workaround to this restriction is to run your model training in a separate notebook that uses TPUs, and then to save the resulting model. You can then load that model into the notebook you use for your submission and use a GPU to run inference and generate your predictions. <br/> <br/> Here’s how that would work in practice: <br/> <br/> <strong> Step 1: Save the Model </strong>
+  
+
+
+More information and tutorials
+  A hands-on TPU tutorial containing more information, best practices and samples is available here:<br/> Keras and modern convnets, on TPUs. (https://codelabs.developers.google.com/codelabs/keras-flowers-tpu/) <br/> <br/> You can also check out our TPU video tutorial, Learn With Me: Getting Started With TPUs (https://youtu.be/1pdwRQ1DQfY) , on our YouTube channel (https://www.youtube.com/kaggle) !
+
+
+TPU playground competition
+  We have prepared a dataset of 13,000 images of flowers for you to play with. You can give TPUs a try in this playground competition: Flower Classification with TPUs (https://www.kaggle.com/c/flower-classification-with-tpus) <br/><br/> For an easy way to begin, check out this tutorial notebook and starter project, a part of our Deep Learning course:
+  
+
+
+TPUs in PyTorch
+  Once you have flipped the "Accelerator" switch in your notebook to "TPU v3-8", this is how to enable TPU training in Tensorflow PyTorch:
+  You should also note the following when using TPUs with PyTorch:

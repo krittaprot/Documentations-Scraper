@@ -1,0 +1,55 @@
+What is Kaggle Models
+  Kaggle Models (https://www.kaggle.com/models) provides a way to discover, use, and share models models for machine learning and generative AI applications. Kaggle Models is a repository of pre-trained models that are deeply integrated with Kaggle's platform including for easy to use in Kaggle Competitions and Notebooks. Like Datasets, Kaggle Models organize community activity that enrich models' usefulness: every model page will contain discussions, public notebooks, and usage statistics like downloads and upvotes that make models more useful.
+  Kaggle Models is a new product which the Kaggle team will continue to develop and improve based on what the community would like to see. If you'd like to make suggestions for improvements or new features or report bugs, we recommend you create a new topic on the Product Feedback forum (https://www.kaggle.com/discussions/product-feedback/new) .
+
+  Where do Models come from?
+    Kaggle Models come from a variety of sources including partners that we collaborate with on releases like Meta's Llama 2 and Alibaba's Qwen, integrations with modeling libraries like Keras, and the community of millions of Kagglers sharing fine-tuned variants and other innovations.
+
+
+Finding Kaggle Models
+  You can find Kaggle Models by using the Models landing page (https://www.kaggle.com/models) . There are a number of filters and sorts plus free text search. For instances you can search by:
+  You may also want to peruse the "Models" tab on competitions to see what models are performing well or are otherwise popular for tasks relevant to your use case. Competitors commonly share which models they're using in public notebooks and in discussion write-ups. When you fork a notebook that has a model from Kaggle Models attached to it, your copy will also have the same model attached.
+  Finally, you can also search for models from within the notebook editor. Use the "Add Models" component in the right-hand pane of the editor to search and attach models to your notebooks. This works similarly to Datasets.
+
+  Understanding the model detail page
+    When you click on a model you will be taken to the "detail page" for that model. For example, this is the detail page for a BERT model (https://www.kaggle.com/models/google/bert) . The model detail page contains an overview tab with a Model Card (metadata and information about how the model was trained, what its acceptable use cases are, any limitations, etc.), a framework and variation explorer, and a usage dashboard. There are tabs for notebooks and discussions. If a model is useful, you can upvote it.
+    Beyond the overall metadata, a model detail page also organizes all variations and frameworks for a given model. For example:
+    You can view and use the specific framework and variation that you want by selecting it in the file explorer on the overview page beneath the Model Card. From here, you can use click "New Notebook" to attach it to a new notebook to start using the model.
+
+
+Using Kaggle Models
+  There's two broad ways that Kaggle Models are useful: on Kaggle and outside of Kaggle (e.g., in production applications or using non-Kaggle tools like Colab, etc.).
+  Currently, Kaggle Models very useful within the context of Competitions, specifically for use within Notebooks. Start by either forking a notebook that has a model attached (you can view the attached models on the "Input" tab of any notebook), creating a new notebook on a model, or adding a model to a new notebook from the right-hand pane of the editor.
+  You'll be prompted to confirm your framework and model variations(s), then simply copy and paste the starter code to load the model.
+  Many developers will need to download models in code outside of Kaggle. There are a few different methods: via the kagglehub Python library (https://github.com/Kaggle/kagglehub) , via our Kaggle CLI (https://github.com/Kaggle/kaggle-api) , or by calling the API directly.
+  Before providing instructions for each of these methods, it's helpful to know that you will need to know how to authenticate in order to access certain models like Gemma (https://www.kaggle.com/models/google/gemma) that require Kaggle credentials in order to confirm that user consent to the custom license has been verified. Obtain credentials (https://www.kaggle.com/settings) from the “Settings” page when logged-in to Kaggle and clicking on the "Create New Token" button under the "API" section.
+  The examples below allow you to download the <code>2b</code> PyTorch variation for the google/gemma (https://www.kaggle.com/models/google/gemma) model. If a model doesn't have a restricted license like Gemma, you'll be able to skip the <code>kagglehub.login()</code> steps in the examples below.
+
+  Method 1. Via the kagglehub Python library
+    See kagglehub documentation (https://github.com/Kaggle/kagglehub) .
+
+  Method 2. Via the Kaggle CLI
+    See documentation (https://github.com/Kaggle/kaggle-api) . Follow steps here (https://github.com/Kaggle/kaggle-api?tab=readme-ov-file#api-credentials) to authenticate with credentials.
+
+  Method 3. Calling the API directly
+
+
+Creating a Model
+  Kaggle has recently introduced the ability for the community to publish models to Kaggle Models. There are a few ways to accomplish this including exclusively via the UI. We recommend using a combination of <code>kagglehub</code>, our Python client library, to manage artifact creation and uploas and the UI to manage documentation and collaborative features.
+
+  Uploading using kagglehub Python client library (preferred)
+    See kagglehub documentation (https://github.com/Kaggle/kagglehub) .
+    
+    
+
+  Uploading using the Kaggle CLI
+    See documentation (https://github.com/Kaggle/kaggle-api) . Follow steps here (https://github.com/Kaggle/kaggle-api?tab=readme-ov-file#api-credentials) to authenticate with credentials.
+    
+    
+
+  Upload via the UI
+    
+    
+
+  Documenting models
+    Documenting your model is easiest to do via the UI.
