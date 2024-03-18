@@ -16,6 +16,3 @@ pip install selenium
 
 ## Author
 - **Krittaprot Tangkittikun**
-
-## Date
-- **March 19, 2024**
