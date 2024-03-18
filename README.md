@@ -12,6 +12,7 @@ To set up your environment for running this scraper, you will need to install th
 ```shell
 pip install beautifulsoup4
 pip install selenium
+```
 
 ## Author
 - **Krittaprot Tangkittikun**
